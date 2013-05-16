@@ -1,23 +1,60 @@
-<a href=//egorhomakov.com>Egor Homakov</a> | Stuff: <a href="4sqlet.html">4sq app</a>
-<a href="redmine.html">Redmine JS leaking</a> 
-<a href="anysquare.html">Clickjacking extractor</a> 
-<a href="stealpass.html">Steal pass with XSS demo</a> 
-<hr>
-<b>ACT — Awesome CSRF Tool for demonstration, testing and exploitation CSRF.</b>
-<p>CURL:</p>
-<p><textarea rows="4" cols="100" id="curl">curl "http://homakov.blogspot.ru/2013/04/consulting.html" -H "version: HTTP/1.1" --data "key1=val&csrf_token=123qwe&hash[lol]=123"</textarea></p>
+<!DOCTYPE html>
+<html>
+<head>
+<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
+<link href="bootstrap/css/custom.css" rel="stylesheet" media="screen" />
+<meta charset="utf-8" />
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<title>ACT &mdash; Awesome CSRF Tool</title>
+</head>
+<body>
+<div class="navbar navbar-inverse">
+	<div class="navbar-inner">
+		<div class="container">
+			<a class="brand" href="//egorhomakov.com">Egor Homakov</a>
+			<div class="nav-collapse collapse navbar-inverse-collapse">
+				<ul class="nav">
+					<li><a href="4sqlet.html">Stuff: 4sq app</a></li>
+					<li><a href="redmine.html">Redmine JS leaking</a></li>
+					<li><a href="anysquare.html">Clickjacking extractor</a></li>
+					<li><a href="stealpass.html">Steal pass with XSS demo</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content">
+<h1>ACT — Awesome CSRF Tool.</h1>
+<h4>New standard for demonstration, penetration and exploitation CSRF.</h4>
 
-<div>
-<input onclick="switch_auto()" type="checkbox" id="c1"><label for="c1">Auto-submission</label>
-<input onclick="switch_base()" type="checkbox" id="c2"><label for="c2">Base64 URL</label>
+<form class="form-horizontal">
+<div class="control-group">
+	<label class="control-label" for="curl">CURL</label>
+	<div class="controls">
+		<textarea rows="4" cols="100" id="curl" style="width: 100%">curl "http://homakov.blogspot.ru/2013/04/consulting.html" -H "version: HTTP/1.1" --data "key1=val&csrf_token=123qwe&hash[lol]=123"</textarea>
+	</div>
+</div>
+<div class="control-group">
+	<div class="controls">
+		<label class="checkbox">
+			<input onclick="switch_auto()" type="checkbox" id="c1">Auto-submission
+		</label>
+		<label class="checkbox">
+			<input onclick="switch_base()" type="checkbox" id="c2">Base64 URL
+		</label>
+		<label class="checkbox">
+			<input type="checkbox" id="c3">Empty referrer [coming soon]
+		</label>
+	</div>
 </div>
 
 <div id="form"></div>
-<iframe id="postme" seamless sandbox="allow-scripts allow-forms" style="width:800px;height:200px;"></iframe>
+<iframe id="postme" seamless sandbox></iframe>
 <hr>
-<p>I am going to create best & simplest CSRF tool ever. Writeup soon. Play with CURL and location hash input — you will love it! Propose your ideas @homakov.<p>
+<p>I am going to create best &amp; simplest CSRF tool ever. Writeup soon. Play with CURL and location hash input &mdash; you will love it! Propose your ideas @homakov.<p>
 
-<img src="http://f.cl.ly/items/411t2m0W0n3h1k3g2F3w/Screen%20Shot%202013-05-05%20at%209.31.54%20PM.png"><p>
+<img src="http://f.cl.ly/items/411t2m0W0n3h1k3g2F3w/Screen%20Shot%202013-05-05%20at%209.31.54%20PM.png" /><p>
 
 <script>
 
@@ -54,15 +91,6 @@ function submit_to(to){
   return false;
 }
 
-function no_ref(){
-  /*
-  var x=new XMLHttpRequest;
-  x.open(form_obj.method, form_obj.url);
-  x.send(form_obj.data);
-  */
-  postme.src = 'data:text/html,'+get_html();
-}
-
 function switch_method(){
   var swap = (form_obj.method == 'GET') ? 'POST' : 'GET'
   form_obj.method = swap;
@@ -90,7 +118,7 @@ function get_inputs(){
 
 function get_html(){
   //alert invisible form
-  return (generate_form(form_obj, false)+'<script>genform.submit()<'+'/script>');
+  alert(generate_form(form_obj, false)+'<script>genform.submit()<'+'/script>');
 }
 
 function generate_form(obj, visible){
@@ -101,7 +129,7 @@ function generate_form(obj, visible){
 
     for(var k in pairs){
       if(visible){
-        inputs += '<tr><td>'+esc(k)+' </td><td><input onchange="update_fields();" size=100 name="'+esc(k)+'" value="'+esc(pairs[k])+'"><a onclick="this.parentNode.parentNode.remove();update_fields();">[X]</a></td></tr>';
+        inputs += '<tr><td>'+k+' </td><td><input onchange="update_fields();" size=100 name="'+esc(k)+'" value="'+esc(pairs[k])+'"><a onclick="this.parentNode.parentNode.remove();update_fields();">[X]</a></td></tr>';
       }else{
         inputs += '<input type="hidden" name="'+esc(k)+'" value="'+esc(pairs[k])+'">';
       }
@@ -114,7 +142,7 @@ function generate_form(obj, visible){
     var out = '<p><a id="cur_method" title="Switch?" href="javascript:switch_method()">'+obj.method+'</a> <input size=120 value="'+esc(obj.url)+'" onchange="switch_url(this.value);"> </p>';
     out += '<div>'+outform+'</div>';
     out += '<div><input id="new_name" placeholder="name"> = <input id="new_value" placeholder="value"> <a href="javascript:update_fields(1);">add<a></div>';
-    out += '<p><input type="submit" onclick="return submit_to(\'_blank\')" value="New window"><input type="submit" onclick="return submit_to(\'_top\')" value="This window"><input type="submit" onclick="return submit_to(\'postme\')" value="Iframe below"><input type="submit" onclick="return no_ref();" value="Empty referer"> | <input type="submit" value="Get CSRF exploit" onclick="alert(get_html());"></p>';
+    out += '<p><input type="submit" onclick="return submit_to(\'_blank\')" value="New window"><input type="submit" onclick="return submit_to(\'_top\')" value="This window"><input type="submit" onclick="return submit_to(\'postme\')" value="Iframe below"> | <input type="submit" value="Get CSRF exploit" onclick="get_html();"></p>';
 
     out = '<div class="yelo">'+out+'</div>';
     return out;
@@ -125,23 +153,10 @@ function generate_form(obj, visible){
 
 }
 
-var HTML = {
-  chars: {
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#039;'    
-  },
-  escape: function(i){
-    return i.replace(HTML.re, function(m){
-      return HTML.chars[m];
-    })
-  }
+function esc(quote){
+  return quote.replace(/"/g,'');
 }
-HTML.re = new RegExp("("+Object.keys(HTML.chars).join('|')+')','g');
 
-var esc = HTML.escape;
 
 function parse_curl(){
   var input = curl.value;
@@ -183,6 +198,7 @@ function update_form(){
   dump_hash(); //updating form? update hash too!
 }
 
+
 curl.onchange = parse_curl;
 
 window.onload = function(){
@@ -196,10 +212,6 @@ window.onload = function(){
       c2.checked = true;
     }
     form_obj = JSON.parse(str);
-
-    // shame on you, asintsov and cyberpank!
-    if(form_obj.url.substr(0,4) != 'http') form_obj.url = 'http://yo.yo';
-    if(['POST','GET'].indexOf(form_obj.method) == -1) form_obj.method = 'POST';
 
     // if autosubmit it should be hidden i guess
     form.innerHTML = generate_form(form_obj, !form_obj.autosubmit);
@@ -215,10 +227,6 @@ window.onload = function(){
 }
 </script>
 
-<style>
-.yelo{
-  background-color: yellow;
-}
-</style>
-
-
+</div><!--/.content-->
+</body>
+</html>
